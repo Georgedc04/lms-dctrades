@@ -1,0 +1,131 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+//////////////////// USER ////////////////////
+
+model User {
+  id        String   @id @default(cuid())
+  clerkId   String   @unique
+  name      String?
+  email     String?
+
+  role      Role     @default(STUDENT)
+  isActive  Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  progress        LessonProgress[]
+  auditLogsActor  AuditLog[] @relation("AuditActor")
+  auditLogsTarget AuditLog[] @relation("AuditTarget")
+}
+
+//////////////////// ROLE ////////////////////
+
+enum Role {
+  STUDENT
+  ADMIN
+  SUPER_ADMIN
+}
+
+//////////////////// COURSE ////////////////////
+
+model Course {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  price       Int
+  isPublished Boolean  @default(false)
+  order       Int      @default(0)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  modules     Module[]
+
+  @@index([order])
+}
+
+//////////////////// MODULE ////////////////////
+
+model Module {
+  id        String   @id @default(cuid())
+  title     String
+  order     Int
+  courseId  String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons   Lesson[]
+
+  @@unique([courseId, order])
+  @@index([courseId])
+}
+
+//////////////////// LESSON ////////////////////
+
+model Lesson {
+  id          String   @id @default(cuid())
+  title       String
+  order       Int
+  moduleId    String
+
+  videoUrl    String
+  pdfUrl      String
+  isPublished Boolean  @default(false)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+
+  module      Module   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  progress    LessonProgress[]
+
+  @@unique([moduleId, order])
+  @@index([moduleId])
+}
+
+//////////////////// PROGRESS ////////////////////
+
+model LessonProgress {
+  id         String   @id @default(cuid())
+  userId     String
+  lessonId   String
+  completed  Boolean  @default(false)
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson     Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId])
+  @@index([userId])
+}
+
+//////////////////// AUDIT LOG ////////////////////
+
+model AuditLog {
+  id        String   @id @default(cuid())
+
+  actorId  String
+  targetId String
+  action   String
+
+  createdAt DateTime @default(now())
+
+  actor  User @relation("AuditActor", fields: [actorId], references: [id])
+  target User @relation("AuditTarget", fields: [targetId], references: [id])
+
+  @@index([actorId])
+  @@index([targetId])
+}
