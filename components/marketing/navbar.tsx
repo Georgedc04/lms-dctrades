@@ -32,33 +32,33 @@ export function Navbar() {
         {/* Actions */}
         <div className="flex items-center gap-3 sm:gap-6">
 
-          {/* Signed out */}
+          {/* ---------- SIGNED OUT ---------- */}
           <SignedOut>
 
             {/* Desktop sign in */}
-            <SignInButton mode="modal">
-              <button className="hidden sm:block text-sm font-bold text-slate-600 hover:text-indigo-600 transition">
+            <SignInButton mode="redirect">
+                <button className="hidden sm:block text-sm font-bold text-slate-600 hover:text-indigo-600 transition">
                 Sign In
-              </button>
+                </button>
             </SignInButton>
 
-            {/* Mobile sign in icon */}
-            <SignInButton mode="modal">
-              <button className="sm:hidden p-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition">
+            {/* Mobile sign in */}
+            <SignInButton mode="redirect">
+                <button className="sm:hidden p-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition">
                 <User className="h-4 w-4" />
-              </button>
+                </button>
             </SignInButton>
 
-            {/* Get started */}
-            <SignUpButton mode="modal">
-              <button className="px-4 sm:px-6 py-2.5 rounded-full bg-slate-900 text-white text-xs sm:text-sm font-bold hover:bg-indigo-600 transition-all active:scale-95">
+            {/* Sign up */}
+            <SignUpButton mode="redirect">
+                <button className="px-4 sm:px-6 py-2.5 rounded-full bg-slate-900 text-white text-xs sm:text-sm font-bold hover:bg-indigo-600 transition-all active:scale-95">
                 Get Started
-              </button>
+                </button>
             </SignUpButton>
 
-          </SignedOut>
+            </SignedOut>
 
-          {/* Signed in */}
+          {/* ---------- SIGNED IN ---------- */}
           <SignedIn>
 
             {/* Desktop dashboard */}
@@ -70,7 +70,7 @@ export function Navbar() {
               Dashboard
             </Link>
 
-            {/* Mobile dashboard icon */}
+            {/* Mobile dashboard */}
             <Link
               href="/dashboard"
               className="sm:hidden p-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition"
@@ -87,8 +87,8 @@ export function Navbar() {
               }}
             />
 
-            {/* Desktop sign out */}
-            <SignOutButton>
+            {/* Sign out */}
+            <SignOutButton redirectUrl="/">
               <button className="hidden md:flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-red-500 transition">
                 <LogOut className="h-4 w-4" />
                 Sign out
@@ -96,6 +96,7 @@ export function Navbar() {
             </SignOutButton>
 
           </SignedIn>
+
         </div>
       </div>
     </nav>
