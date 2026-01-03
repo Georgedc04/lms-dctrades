@@ -1,62 +1,139 @@
+/* eslint-disable @next/next/no-img-element */
 import { prisma } from "@/lib/prisma";
+import Link from "next/link";
+import {
+  BookOpen,
+  ArrowRight,
+  AlertCircle,
+  Search,
+  Sparkles,
+  Layers,
+} from "lucide-react";
+
+type Course = {
+  id: string;
+  title: string;
+  imageUrl: string | null;
+};
 
 export default async function CoursesPage() {
-  let courses = [];
+  let courses: Course[] = [];
 
   try {
     courses = await prisma.course.findMany({
       where: { isPublished: true },
       orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        title: true,
+        imageUrl: true, // ✅ REQUIRED
+      },
     });
-  } catch (err) {
-    console.error("DB ERROR:", err);
+  } catch {
     return (
-      <div className="flex min-h-screen items-center justify-center text-red-500">
-        Database unavailable. Try again.
+      <div className="flex min-h-[70vh] flex-col items-center justify-center text-center px-4">
+        <AlertCircle className="h-8 w-8 text-red-500 mb-3" />
+        <h2 className="text-lg font-semibold">Connection Error</h2>
+        <p className="text-sm text-slate-500 max-w-xs">
+          Please refresh or try again later.
+        </p>
       </div>
     );
   }
 
   if (courses.length === 0) {
     return (
-      <div className="flex min-h-screen items-center justify-center text-gray-500">
-        No courses available
+      <div className="flex min-h-[70vh] flex-col items-center justify-center text-center px-4">
+        <Search className="h-8 w-8 text-slate-400 mb-3" />
+        <h2 className="text-lg font-semibold">No courses yet</h2>
+        <p className="text-sm text-slate-500">
+          Check back later for updates.
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 px-6 py-12">
+    <div className="min-h-screen bg-slate-50 px-4 py-10 lg:py-16">
       <div className="mx-auto max-w-6xl">
-        {/* Header */}
-        <h1 className="mb-8 text-3xl font-bold text-gray-900">
-          Available Courses
-        </h1>
 
-        {/* Courses Grid */}
+        {/* HEADER */}
+        <div className="mb-10 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <div>
+            <div className="mb-1 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-indigo-600">
+              <Sparkles className="h-4 w-4" />
+              Explore Learning
+            </div>
+            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900">
+              Available{" "}
+              <span className="bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">
+                Courses
+              </span>
+            </h1>
+          </div>
+
+          <p className="max-w-md text-sm md:text-base text-slate-500">
+            Master smart money concepts with expert-led lessons.
+          </p>
+        </div>
+
+        {/* GRID */}
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {courses.map(course => (
+          {courses.map((course) => (
             <div
               key={course.id}
-              className="rounded-xl bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+              className="group flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition hover:-translate-y-1 hover:shadow-lg"
             >
-              <h3 className="mb-2 text-xl font-semibold text-gray-900">
-                {course.title}
-              </h3>
+              {/* IMAGE THUMBNAIL */}
+              <div className="relative h-40 w-full overflow-hidden bg-slate-100">
+                {course.imageUrl ? (
+                  <img
+                    src={course.imageUrl}
+                    alt={course.title}
+                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center">
+                    <Layers className="h-8 w-8 text-slate-400" />
+                  </div>
+                )}
+              </div>
 
-              <p className="mb-6 text-sm text-gray-500">
-                Learn smart money concepts step by step.
-              </p>
+              {/* CONTENT */}
+              <div className="flex flex-col p-5">
+                <div className="mb-3">
+                  <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                    Bestseller
+                  </span>
+                </div>
 
-              <a
-                href={`/courses/${course.id}`}
-                className="inline-block rounded-lg bg-black px-4 py-2 text-sm font-medium text-white transition hover:bg-gray-800"
-              >
-                View Course →
-              </a>
+                <h3 className="mb-2 text-lg font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                  {course.title}
+                </h3>
+
+                <p className="mb-5 text-sm text-slate-500 leading-relaxed">
+                  Learn smart money concepts step by step with real examples.
+                </p>
+
+                <div className="mt-auto flex items-center justify-between border-t pt-4">
+                  <div className="flex items-center gap-1.5 text-xs font-medium text-slate-600">
+                    <BookOpen className="h-4 w-4 text-indigo-500" />
+                    Self-paced
+                  </div>
+
+                  <Link
+                    href={`/courses/${course.id}`}
+                    className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold text-white transition hover:bg-indigo-600"
+                  >
+                    View Course
+                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  </Link>
+                </div>
+              </div>
             </div>
           ))}
         </div>
+
       </div>
     </div>
   );

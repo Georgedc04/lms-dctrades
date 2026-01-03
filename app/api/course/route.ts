@@ -19,7 +19,7 @@ export async function GET() {
 // CREATE course
 export async function POST(req: Request) {
   try {
-    const { title, price } = await req.json();
+    const { title, price, imageUrl } = await req.json();
 
     if (!title || !price) {
       return NextResponse.json(
@@ -32,7 +32,8 @@ export async function POST(req: Request) {
       data: {
         title,
         price: Number(price),
-        isPublished: false, // default
+        imageUrl: imageUrl ?? null, // ✅ SAVE THUMBNAIL
+        isPublished: false,
       },
     });
 
@@ -45,10 +46,10 @@ export async function POST(req: Request) {
   }
 }
 
-// ✅ PUBLISH / UNPUBLISH COURSE (CASCADE TO LESSONS)
+// UPDATE / PUBLISH / UNPUBLISH COURSE
 export async function PATCH(req: Request) {
   try {
-    const { id, isPublished } = await req.json();
+    const { id, title, price, imageUrl, isPublished } = await req.json();
 
     if (!id) {
       return NextResponse.json(
@@ -57,28 +58,34 @@ export async function PATCH(req: Request) {
       );
     }
 
-    // 1️⃣ Update course publish state
     const course = await prisma.course.update({
       where: { id },
-      data: { isPublished },
+      data: {
+        ...(title !== undefined && { title }),
+        ...(price !== undefined && { price: Number(price) }),
+        ...(imageUrl !== undefined && { imageUrl }), // ✅ UPDATE THUMBNAIL
+        ...(isPublished !== undefined && { isPublished }),
+      },
     });
 
-    // 2️⃣ Cascade update ALL lessons under this course
-    await prisma.lesson.updateMany({
-      where: {
-        module: {
-          courseId: id,
+    // Cascade publish to lessons
+    if (isPublished !== undefined) {
+      await prisma.lesson.updateMany({
+        where: {
+          module: {
+            courseId: id,
+          },
         },
-      },
-      data: {
-        isPublished,
-      },
-    });
+        data: {
+          isPublished,
+        },
+      });
+    }
 
     return NextResponse.json(course);
   } catch {
     return NextResponse.json(
-      { error: "Failed to update publish state" },
+      { error: "Failed to update course" },
       { status: 500 }
     );
   }

@@ -1,37 +1,72 @@
-/* eslint-disable @next/next/no-html-link-for-pages */
-export default function LessonView() {
+import { prisma } from "@/lib/prisma";
+import Link from "next/link";
+
+export default async function LessonView({
+  params,
+}: {
+  params: { courseId: string; lessonId: string };
+}) {
+  const { courseId, lessonId } = params;
+
+  if (!lessonId) {
+    return <div className="p-6 text-sm text-red-500">Invalid lesson</div>;
+  }
+
+  const lesson = await prisma.lesson.findUnique({
+    where: { id: lessonId },
+  });
+
+  if (!lesson || !lesson.isPublished) {
+    return (
+      <div className="p-6 text-sm text-gray-500">
+        Lesson not found or unpublished
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gray-100 px-6 py-10">
-      <div className="mx-auto max-w-4xl">
-        {/* Lesson Title */}
-        <h1 className="mb-6 text-3xl font-bold text-gray-900">
-          Lesson Title
-        </h1>
+    <div className="min-h-screen bg-slate-50 px-6 py-10">
+      <div className="mx-auto max-w-4xl space-y-8">
 
-        {/* Video */}
-        <div className="mb-8 overflow-hidden rounded-xl bg-black shadow">
-          <video
-            controls
-            className="w-full"
-          />
+        {/* TITLE */}
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900">
+            {lesson.title}
+          </h1>
         </div>
 
-        {/* Actions */}
+        {/* VIDEO */}
+        {lesson.videoUrl && (
+          <div className="overflow-hidden rounded-2xl bg-black shadow">
+            <video
+              controls
+              src={lesson.videoUrl}
+              className="w-full"
+            />
+          </div>
+        )}
+
+        {/* ACTIONS */}
         <div className="flex items-center gap-4">
-          <a
-            href="#"
-            className="inline-flex items-center rounded-lg bg-black px-5 py-2.5 text-sm font-medium text-white transition hover:bg-gray-800"
-          >
-            📄 Download PDF
-          </a>
+          {lesson.pdfUrl && (
+            <a
+              href={lesson.pdfUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center rounded-lg bg-slate-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800"
+            >
+              📄 Download PDF
+            </a>
+          )}
 
-          <a
-            href="/courses"
-            className="text-sm text-gray-600 hover:text-gray-900"
+          <Link
+            href={`/courses/${courseId}`}
+            className="text-sm font-medium text-slate-500 hover:text-slate-700"
           >
-            ← Back to courses
-          </a>
+            ← Back to course
+          </Link>
         </div>
+
       </div>
     </div>
   );

@@ -1,17 +1,37 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
+type ReorderItem = {
+  id: string;
+  order: number;
+};
+
 export async function POST(req: Request) {
-  const items: { id: string; order: number }[] = await req.json();
+  try {
+    const items: ReorderItem[] = await req.json();
 
-  await prisma.$transaction(
-    items.map(i =>
-      prisma.course.update({
-        where: { id: i.id },
-        data: { order: i.order },
-      })
-    )
-  );
+    if (!Array.isArray(items) || items.length === 0) {
+      return NextResponse.json(
+        { error: "Invalid reorder payload" },
+        { status: 400 }
+      );
+    }
 
-  return NextResponse.json({ success: true });
+    await prisma.$transaction(
+      items.map((item) =>
+        prisma.course.update({
+          where: { id: item.id },
+          data: { order: item.order }, // ✅ ONLY order
+        })
+      )
+    );
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("REORDER ERROR:", error);
+    return NextResponse.json(
+      { error: "Failed to reorder courses" },
+      { status: 500 }
+    );
+  }
 }

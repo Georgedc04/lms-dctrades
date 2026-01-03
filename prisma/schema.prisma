@@ -41,6 +41,7 @@ model Course {
   title       String
   description String?
   price       Int
+  imageUrl    String?        // ✅ Course thumbnail
   isPublished Boolean  @default(false)
   order       Int      @default(0)
 

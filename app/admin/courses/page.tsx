@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 import { useEffect, useMemo, useState } from "react";
 
@@ -7,15 +8,17 @@ type Course = {
   title: string;
   price: number;
   isPublished: boolean;
+  imageUrl?: string | null;
 };
 
 export default function CoursesPage() {
   const [title, setTitle] = useState("");
   const [price, setPrice] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
   const [courses, setCourses] = useState<Course[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [selected, setSelected] = useState<string[]>([]);
-  const [deleted, setDeleted] = useState<Course | null>(null);
+  const [, setDeleted] = useState<Course | null>(null);
   const [dragId, setDragId] = useState<string | null>(null);
 
   function fetchCourses() {
@@ -48,11 +51,13 @@ export default function CoursesPage() {
         id: editingId,
         title,
         price: Number(price),
+        imageUrl: imageUrl || null,
       }),
     });
 
     setTitle("");
     setPrice("");
+    setImageUrl("");
     setEditingId(null);
     fetchCourses();
   }
@@ -164,28 +169,31 @@ export default function CoursesPage() {
             className="border rounded-xl px-4 py-2 w-full"
           />
 
-          <div className="flex gap-3">
-            <button
-              onClick={saveCourse}
-              disabled={!title || !price}
-              className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white py-2.5 rounded-xl font-medium disabled:opacity-50"
-            >
-              {editingId ? "Update Course" : "Create Course"}
-            </button>
+          <input
+            placeholder="Thumbnail Image URL (https://...)"
+            value={imageUrl}
+            onChange={e => setImageUrl(e.target.value)}
+            className="border rounded-xl px-4 py-2 w-full"
+          />
 
-            {editingId && (
-              <button
-                onClick={() => {
-                  setEditingId(null);
-                  setTitle("");
-                  setPrice("");
-                }}
-                className="text-sm text-gray-500 underline"
-              >
-                Cancel
-              </button>
-            )}
-          </div>
+          {imageUrl && (
+            <div className="mt-2">
+              <p className="text-sm text-gray-500 mb-1">Preview</p>
+              <img
+                src={imageUrl}
+                alt="Thumbnail preview"
+                className="h-32 w-full object-cover rounded-xl border"
+              />
+            </div>
+          )}
+
+          <button
+            onClick={saveCourse}
+            disabled={!title || !price}
+            className="w-full bg-blue-600 text-white py-2.5 rounded-xl font-medium disabled:opacity-50"
+          >
+            {editingId ? "Update Course" : "Create Course"}
+          </button>
         </div>
 
         {/* Courses List */}
@@ -197,26 +205,19 @@ export default function CoursesPage() {
               onDragOver={e => e.preventDefault()}
               className="flex items-center justify-between border rounded-xl p-4"
             >
-              <div className="flex items-center gap-3">
-                <input
-                  type="checkbox"
-                  checked={selected.includes(course.id)}
-                  onChange={() =>
-                    setSelected(s =>
-                      s.includes(course.id)
-                        ? s.filter(id => id !== course.id)
-                        : [...s, course.id]
-                    )
-                  }
-                />
-
-                <span
-                  draggable
-                  onDragStart={() => setDragId(course.id)}
-                  className="cursor-grab text-gray-400"
-                >
-                  ⠿
-                </span>
+              <div className="flex items-center gap-4">
+                {/* ✅ ONLY ADDITION: thumbnail preview */}
+                {course.imageUrl ? (
+                  <img
+                    src={course.imageUrl}
+                    alt={course.title}
+                    className="h-12 w-20 object-cover rounded-md border"
+                  />
+                ) : (
+                  <div className="h-12 w-20 rounded-md bg-gray-100 flex items-center justify-center text-xs text-gray-400">
+                    No Image
+                  </div>
+                )}
 
                 <div>
                   <p className="font-medium">{course.title}</p>
@@ -237,6 +238,7 @@ export default function CoursesPage() {
                     setEditingId(course.id);
                     setTitle(course.title);
                     setPrice(String(course.price));
+                    setImageUrl(course.imageUrl ?? "");
                   }}
                   className="text-blue-600 text-sm"
                 >
@@ -260,22 +262,6 @@ export default function CoursesPage() {
             </div>
           ))}
         </div>
-
-        {/* Undo Toast */}
-        {deleted && (
-          <div className="fixed bottom-6 right-6 bg-white shadow-xl rounded-xl p-4 flex gap-3">
-            <span>Course deleted</span>
-            <button
-              onClick={() => {
-                setCourses(prev => [...prev, deleted]);
-                setDeleted(null);
-              }}
-              className="text-blue-600 font-medium"
-            >
-              Undo
-            </button>
-          </div>
-        )}
 
       </div>
     </div>

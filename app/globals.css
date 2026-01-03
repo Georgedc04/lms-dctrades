@@ -1,3 +1,71 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ---------- BASE ---------- */
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+  }
+
+  html,
+  body {
+    min-height: 100%;
+  }
+
+  body {
+    font-family: var(--font-inter), ui-sans-serif, system-ui;
+    @apply antialiased text-slate-900;
+
+    /* Ambient premium background */
+    background:
+      radial-gradient(
+        900px circle at top center,
+        rgba(255, 255, 255, 0.12),
+        transparent 65%
+      ),
+      linear-gradient(
+        to bottom,
+        #f8fafc 0%,
+        #f8fafc 45%,
+        #f1f5f9 100%
+      );
+  }
+
+  /* Headings: tighter, premium */
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply tracking-tight;
+  }
+}
+
+/* ---------- COMPONENTS ---------- */
+@layer components {
+  /* Handwritten text utility */
+  .font-handwritten {
+    font-family: var(--font-handwritten), cursive;
+    @apply leading-none;
+  }
+
+  /* Glass / bento card effect */
+  .glass-card {
+    @apply bg-white/70 backdrop-blur-xl border border-white/20 shadow-xl;
+  }
+}
+
+/* ---------- GLOBAL UTILS ---------- */
+
+/* Selection color */
+::selection {
+  @apply bg-indigo-100 text-indigo-900;
+}
+
+/* Handwritten ink refinement */
+.font-handwritten {
+  filter: contrast(1.1) brightness(0.9);
+  letter-spacing: -0.02em;
+  -webkit-font-smoothing: initial;
+}
